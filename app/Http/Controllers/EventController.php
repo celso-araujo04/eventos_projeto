@@ -40,6 +40,27 @@ class EventController extends Controller
     }
 
     public function store(Request $request){
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'date' => 'required|date',
+            'city' => 'required|string|max:255',
+            'private' => 'required|boolean',
+            'description' => 'required|string',
+            'items' => 'required|nullable|array',
+            'image' => 'required|nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ], [
+            'title.required' => 'O título do evento é obrigatório.',
+            'date.required' => 'A data do evento é obrigatória.',
+            'city.required' => 'A cidade do evento é obrigatória.',
+            'private.required' => 'O campo de privacidade é obrigatório.',
+            'description.required' => 'A descrição do evento é obrigatória.',
+            'items.required' => 'O campo itens é obrigatório e requer no mínimo um item.',
+            'image.required' => 'A imagem do evento é obrigatória.',
+            'image.image' => 'O arquivo enviado deve ser uma imagem.',
+            'image.mimes' => 'A imagem deve estar no formato: jpeg, png, jpg ou gif.',
+            'image.max' => 'A imagem não pode ter mais de 2MB.',
+        ]);
+        
         $event = new Event;
 
         $event->title = $request->title;
@@ -93,7 +114,12 @@ class EventController extends Controller
     }
 
     public function destroy($id){
-        Event::findOrFail($id) -> delete();
+       // Event::findOrFail($id) -> delete();
+    $event = Event::findOrFail($id);
+    
+    $event->users()->detach();
+
+    $event->delete();
         return redirect('/dashboard')-> with('msg', 'Evento excluído com sucesso');
     }
 
